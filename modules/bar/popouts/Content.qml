@@ -3,7 +3,9 @@ pragma ComponentBehavior: Bound
 import "./kblayout"
 import QtQuick
 import Quickshell
-import Quickshell.Services.SystemTray
+import Quickshell.Services.UPower
+import Quickshell
+import Quickshell.Services.UPower.Services.SystemTray
 import Caelestia.Config
 import qs.components
 import qs.services

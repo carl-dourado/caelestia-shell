@@ -37,6 +37,8 @@ StyledRect {
     function collapsed(entry: var): bool {
         if (entry.id === "lockStatus")
             return !Hypr.capsLock && !Hypr.numLock;
+        if (entry.id === "battery")
+            return !UPower.displayDevice.isLaptopBattery;
         return false;
     }
 

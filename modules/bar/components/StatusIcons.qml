@@ -137,6 +137,7 @@ StyledRect {
                 DelegateChoice {
                     roleValue: "battery"
                     delegate: EntryWrapper {
+                        visible: UPower.displayDevice.isLaptopBattery
                         BatteryStatus {
                             colour: root.colour
                         }

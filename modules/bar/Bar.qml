@@ -9,6 +9,7 @@ import Quickshell
 import Caelestia.Config
 import qs.components
 import qs.services
+import qs.modules.bar.components as BarComponents
 
 ColumnLayout {
     id: root
@@ -28,6 +29,18 @@ ColumnLayout {
             if (tray)
                 tray.expanded = false;
         }
+    }
+
+    function entriesWithNetworkEmergency(entries: var): var {
+        const result = entries.filter(e => e.enabled ?? true).slice();
+        if (result.some(e => e.id === "networkEmergency"))
+            return result;
+
+        const powerIndex = result.findIndex(e => e.id === "power");
+        result.splice(powerIndex < 0 ? result.length : powerIndex, 0, {
+            id: "networkEmergency"
+        });
+        return result;
     }
 
     function checkPopout(y: real): void {
@@ -173,6 +186,14 @@ ColumnLayout {
                 }
             }
             DelegateChoice {
+            DelegateChoice {
+                roleValue: "networkEmergency"
+                delegate: EntryWrapper {
+                    NetworkEmergency {
+                        objectName: "taskbarNetworkEmergency"
+                    }
+                }
+            }
                 roleValue: "power"
                 delegate: EntryWrapper {
                     Power {

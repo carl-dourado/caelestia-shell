@@ -48,10 +48,17 @@ Item {
         anchors.bottom: parent.bottom
 
         active: root.shouldBeActive || root.visible
+        asynchronous: true
 
-        sourceComponent: Content {
-            screenState: root.screenState
-            facePicker: root.facePicker
+        onActiveChanged: {
+            if (active) {
+                setSource("Content.qml", {
+                    "screenState": root.screenState,
+                    "facePicker": root.facePicker
+                });
+            } else {
+                source = "";
+            }
         }
     }
 }

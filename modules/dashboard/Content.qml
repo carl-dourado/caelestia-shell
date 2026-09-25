@@ -9,6 +9,8 @@ import Caelestia.Config
 import Caelestia.I18n
 import qs.components
 import qs.components.filedialog
+import "datalink"
+import "transfer"
 
 Item {
     id: root
@@ -41,7 +43,20 @@ Item {
                 iconName: "cloud",
                 text: Tr.tr("Weather"),
                 enabled: Config.dashboard.showWeather
+            },
+            {
+                component: dataLinkComponent,
+                iconName: "link",
+                text: Tr.tr("Data Link"),
+                enabled: true
+            },
+            {
+                component: transferComponent,
+                iconName: "swap_vert",
+                text: Tr.tr("Transfer"),
+                enabled: true
             }
+
         ];
         return allTabs.filter(tab => tab.enabled);
     }
@@ -181,6 +196,19 @@ Item {
 
                 WeatherTab {}
             }
+
+            Component {
+                id: dataLinkComponent
+
+                DataLinkPage {}
+            }
+
+            Component {
+                id: transferComponent
+
+                TransferPage {}
+            }
+
 
             Behavior on contentX {
                 Anim {}

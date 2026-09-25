@@ -32,9 +32,16 @@ Item {
         anchors.left: parent.left
 
         active: root.shouldBeActive || root.visible
+        asynchronous: true
 
-        sourceComponent: Content {
-            screenState: root.screenState
+        onActiveChanged: {
+            if (active) {
+                setSource("Content.qml", {
+                    "screenState": root.screenState
+                });
+            } else {
+                source = "";
+            }
         }
     }
 }

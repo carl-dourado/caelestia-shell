@@ -50,11 +50,18 @@ Item {
         anchors.horizontalCenter: parent.horizontalCenter
 
         active: root.shouldBeActive || root.visible
+        asynchronous: true
 
-        sourceComponent: Content {
-            screenState: root.screenState
-            panels: root.panels
-            maxHeight: root.maxHeight
+        onActiveChanged: {
+            if (active) {
+                setSource("Content.qml", {
+                    "screenState": root.screenState,
+                    "panels": root.panels,
+                    "maxHeight": Qt.binding(() => root.maxHeight)
+                });
+            } else {
+                source = "";
+            }
         }
     }
 }

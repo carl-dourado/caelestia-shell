@@ -168,6 +168,7 @@ Singleton {
         readonly property var ddcInfo: root.ddcMonitorMap[modelData.name] ?? null
         readonly property bool isDdc: ddcInfo !== null
         readonly property string busNum: ddcInfo?.busNum ?? ""
+        readonly property bool isSoftwareBrightness: parseInt(busNum, 10) >= 900
         readonly property bool isAppleDisplay: root.appleDisplayPresent && modelData.model.startsWith("StudioDisplay")
         property real brightness
         property real queuedBrightness: NaN
@@ -187,7 +188,7 @@ Singleton {
         }
 
         readonly property Timer timer: Timer {
-            interval: 500
+            interval: monitor.isSoftwareBrightness ? 33 : 500
             onTriggered: {
                 if (!isNaN(monitor.queuedBrightness)) {
                     monitor.setBrightness(monitor.queuedBrightness);
@@ -197,7 +198,7 @@ Singleton {
         }
 
         function setBrightness(value: real): void {
-            value = Math.max(0, Math.min(1, value));
+            value = Math.max(isSoftwareBrightness ? 0.1 : 0, Math.min(1, value));
             const rounded = Math.round(value * 100);
             if (Math.round(brightness * 100) === rounded)
                 return;

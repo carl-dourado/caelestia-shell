@@ -102,14 +102,20 @@ Item {
         asynchronous: true
         active: root.shouldBeActive || root.visible
 
-        sourceComponent: Content {
-            monitor: root.monitor
-            screenState: root.screenState
-            volume: root.volume
-            muted: root.muted
-            sourceVolume: root.sourceVolume
-            sourceMuted: root.sourceMuted
-            brightness: root.brightness
+        onActiveChanged: {
+            if (active) {
+                setSource("Content.qml", {
+                    "monitor": root.monitor,
+                    "screenState": root.screenState,
+                    "volume": Qt.binding(() => root.volume),
+                    "muted": Qt.binding(() => root.muted),
+                    "sourceVolume": Qt.binding(() => root.sourceVolume),
+                    "sourceMuted": Qt.binding(() => root.sourceMuted),
+                    "brightness": Qt.binding(() => root.brightness)
+                });
+            } else {
+                source = "";
+            }
         }
     }
 }

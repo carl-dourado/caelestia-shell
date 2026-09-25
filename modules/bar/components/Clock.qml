@@ -6,6 +6,8 @@ import Caelestia.Config
 import Caelestia.I18n
 import qs.components
 import qs.services
+import Quickshell
+import qs.components.controls
 
 StyledRect {
     id: root

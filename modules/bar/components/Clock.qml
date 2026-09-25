@@ -20,6 +20,99 @@ StyledRect {
         return root.font.width(scale * 100).letterSpacing(scale).build();
     }
 
+
+    required property var bar
+    readonly property var popouts: root.bar?.popouts ?? null
+    readonly property var calendar: (popouts?.currentName === "clock") ? (popouts.current ?? null) : null
+
+    property bool menuOpen: false
+    property int hoverOpenDelay: 350
+    property int hoverCloseDelay: 250
+
+// --- Date helpers ----------------------------------------------------
+
+    // Auxiliary PT-BR weekday translation (English stays the main display).
+    function weekdayPt(d: date): string {
+        return ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"][d.getDay()];
+    }
+
+    function timeStr(): string {
+        return Units.twelveHourClock ? `${Time.hourStr}:${Time.minuteStr} ${Time.amPmStr}` : Time.format("HH:mm");
+    }
+
+    function dateIso(): string {
+        return Time.format("yyyy-MM-dd");
+    }
+
+    function dateTimeIso(): string {
+        return Time.format("yyyy-MM-dd HH:mm");
+    }
+
+    function timestamp(): string {
+        return String(Math.floor(Time.date.getTime() / 1000));
+    }
+
+    function copyTime(): void {
+        Quickshell.clipboardText = timeStr();
+        Toaster.toast(qsTr("Time copied"), timeStr(), "schedule");
+    }
+
+    function copyDate(): void {
+        Quickshell.clipboardText = dateIso();
+        Toaster.toast(qsTr("Date copied"), dateIso(), "calendar_today");
+    }
+
+    function copyDateTime(): void {
+        Quickshell.clipboardText = dateTimeIso();
+        Toaster.toast(qsTr("Date & time copied"), dateTimeIso(), "event");
+    }
+
+    function copyTimestamp(): void {
+        Quickshell.clipboardText = timestamp();
+        Toaster.toast(qsTr("Timestamp copied"), timestamp(), "timer");
+    }
+
+    // --- Popout control ----------------------------------------------------------
+
+    function openPopout(mode: string): void {
+        if (!root.popouts)
+            return;
+
+        root.popouts.currentName = "clock";
+        root.popouts.currentCenter = root.mapToItem(root.bar, 0, root.implicitHeight / 2).y;
+        root.popouts.hasCurrent = true;
+
+        // The popout item is created on the same frame the state flips; defer the
+        // mode switch one tick so the item is guaranteed to exist.
+        Qt.callLater(() => {
+            const cal = root.popouts?.current;
+            if (cal && cal.mode !== mode)
+                cal.mode = mode;
+        });
+    }
+
+    function toggleCalendar(): void {
+        if (!root.popouts)
+            return;
+
+        hoverOpenTimer.stop();
+        hoverCloseTimer.stop();
+
+        const cal = (root.popouts.currentName === "clock") ? (root.popouts.current ?? null) : null;
+        if (root.popouts.hasCurrent && cal) {
+            if (cal.mode === "calendar") {
+                // Second click closes the calendar popout.
+                root.popouts.hasCurrent = false;
+            } else {
+                // Upgrade the hover popout into the full calendar.
+                cal.mode = "calendar";
+            }
+        } else {
+            root.openPopout("calendar");
+        }
+    }
+
+    
     implicitWidth: Tokens.sizes.bar.innerWidth
     implicitHeight: layout.implicitHeight + root.padding * 2
 
@@ -58,6 +151,15 @@ StyledRect {
                     text: Time.format("ddd")
                     font: Tokens.font.body.builders.small.scale(0.9).build()
                     color: root.colour
+                }
+
+                // PT-BR auxiliary weekday translation: secondary and discreet.
+                StyledText {
+                    Layout.alignment: Qt.AlignHCenter
+                    text: root.weekdayPt(Time.date)
+                    font: Tokens.font.body.builders.small.scale(0.75).build()
+                    color: root.colour
+                    opacity: 0.55
                 }
 
                 StyledText {
@@ -142,5 +244,100 @@ StyledRect {
                 color: root.colour
             }
         }
+    }
+
+    // --- Interactions ------------------------------------------------------------
+
+    MouseArea {
+        id: mouseArea
+
+        anchors.fill: parent
+        acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
+        hoverEnabled: true
+        cursorShape: Qt.PointingHandCursor
+
+        onEntered: {
+            hoverCloseTimer.stop();
+            if (!root.popouts?.hasCurrent || root.popouts?.currentName !== "clock")
+                hoverOpenTimer.start();
+        }
+
+        onExited: {
+            hoverOpenTimer.stop();
+            hoverCloseTimer.start();
+        }
+
+        onClicked: e => {
+            if (e.button === Qt.LeftButton)
+                root.toggleCalendar();
+            else if (e.button === Qt.RightButton)
+                root.openMenu();
+            else if (e.button === Qt.MiddleButton)
+                root.copyDateTime();
+        }
+    }
+
+    // Small delay so a quick crossing of the cursor does not pop anything up.
+    Timer {
+        id: hoverOpenTimer
+
+        interval: root.hoverOpenDelay
+        onTriggered: {
+            if (!root.popouts?.hasCurrent || root.popouts?.currentName !== "clock")
+                root.openPopout("compact");
+        }
+    }
+
+    Timer {
+        id: hoverCloseTimer
+
+        interval: root.hoverCloseDelay
+        onTriggered: {
+            // Only auto-close the passive hover popout, never the calendar.
+            const cal = root.calendar;
+            if (cal && cal.mode === "compact" && !cal.hovered)
+                root.popouts.hasCurrent = false;
+        }
+    }
+
+    Menu {
+        id: menu
+
+        attachTo: root
+        attachSideX: Menu.Right
+        thisSideX: Menu.Left
+        attachSideY: Menu.Top
+        thisSideY: Menu.Top
+        marginX: Tokens.spacing.small
+        marginY: root.height / 2
+
+        expanded: root.menuOpen
+        onExpandedChanged: {
+            if (!expanded)
+                root.menuOpen = false;
+        }
+
+        items: [
+            MenuItem {
+                text: qsTr("Copy time")
+                icon: "schedule"
+                onClicked: root.copyTime()
+            },
+            MenuItem {
+                text: qsTr("Copy date")
+                icon: "calendar_today"
+                onClicked: root.copyDate()
+            },
+            MenuItem {
+                text: qsTr("Copy date & time")
+                icon: "event"
+                onClicked: root.copyDateTime()
+            },
+            MenuItem {
+                text: qsTr("Copy timestamp")
+                icon: "timer"
+                onClicked: root.copyTimestamp()
+            }
+        ]
     }
 }

@@ -27,6 +27,7 @@ Item {
 
     function show(): void {
         screenState.osd = true;
+        try { Nightlight.refresh(); Saturation.refresh(); } catch (e) {}
         timer.restart();
     }
 
@@ -36,6 +37,7 @@ Item {
         sourceVolume = Audio.sourceVolume;
         sourceMuted = Audio.sourceMuted;
         brightness = root.monitor?.brightness ?? 0;
+        try { Nightlight.refresh(); Saturation.refresh(); } catch (e) {}
     }
 
     visible: offsetScale < 1

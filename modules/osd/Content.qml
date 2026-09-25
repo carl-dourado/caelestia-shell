@@ -9,6 +9,7 @@ import qs.components
 import qs.components.controls
 import qs.services
 import qs.utils
+import QtQuick.Controls
 
 Item {
     id: root
@@ -45,6 +46,46 @@ Item {
         anchors.centerIn: parent
         anchors.horizontalCenterOffset: CUtils.clamp(Tokens.padding.large - Config.border.thickness, 0, Tokens.padding.large) / 2
         spacing: Tokens.spacing.medium
+
+        // Audio Sinks Selection Row
+        WrappedLoader {
+            shouldBeActive: Config.osd.enableAudioOutputs && Audio.sinks.length > 1
+
+            sourceComponent: RowLayout {
+                spacing: Tokens.spacing.medium
+
+                Repeater {
+                    model: Audio.sinks
+
+                    delegate: ColumnLayout {
+                        id: outputDevice
+
+                        required property var modelData
+
+                        spacing: Tokens.spacing.extraSmall
+
+                        IconButton {
+                            Layout.alignment: Qt.AlignHCenter
+                            checked: Audio.sink?.id === outputDevice.modelData.id
+                            icon: root.sinkKind(outputDevice.modelData)
+
+                            ToolTip.delay: 350
+                            ToolTip.visible: hovered
+                            ToolTip.text: outputDevice.modelData.description || outputDevice.modelData.name
+
+                            onClicked: Audio.setAudioSink(outputDevice.modelData)
+                        }
+
+                        StyledText {
+                            Layout.alignment: Qt.AlignHCenter
+                            text: root.sinkLabel(outputDevice.modelData)
+                            font: Tokens.font.label.small
+                            color: Audio.sink?.id === outputDevice.modelData.id ? Colours.palette.m3primary : Colours.palette.m3onSurfaceVariant
+                        }
+                    }
+                }
+            }
+        }
 
         // Audio Sinks Selection Row
         WrappedLoader {

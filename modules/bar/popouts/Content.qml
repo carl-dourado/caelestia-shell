@@ -37,6 +37,13 @@ Item {
         }
 
         Popout {
+            name: "clock"
+            sourceComponent: ClockCalendar {
+                popouts: root.popouts
+            }
+        }
+
+        Popout {
             id: networkPopout
 
             name: "network"

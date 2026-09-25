@@ -109,9 +109,14 @@ Item {
             }
         }
 
+        Component {
+            id: batteryComp
+            Battery {}
+        }
+
         Popout {
             name: "battery"
-            sourceComponent: Battery {}
+            sourceComponent: UPower.displayDevice.isLaptopBattery ? batteryComp : null
         }
 
         Popout {

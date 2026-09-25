@@ -80,12 +80,18 @@ Item {
         asynchronous: true
         active: root.shouldBeActive || root.visible
 
-        sourceComponent: Content {
-            implicitWidth: root.implicitWidth - root.totalPadding
-            props: root.props
-            screenState: root.screenState
-            popouts: root.popouts
-            deformMatrix: root.deformMatrix
+        onActiveChanged: {
+            if (active) {
+                setSource("Content.qml", {
+                    "implicitWidth": Qt.binding(() => root.implicitWidth - root.totalPadding),
+                    "props": root.props,
+                    "screenState": root.screenState,
+                    "popouts": root.popouts,
+                    "deformMatrix": Qt.binding(() => root.deformMatrix)
+                });
+            } else {
+                source = "";
+            }
         }
     }
 }

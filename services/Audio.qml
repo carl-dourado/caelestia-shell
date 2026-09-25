@@ -62,7 +62,14 @@ Singleton {
     }
 
     function setAudioSink(newSink: PwNode): void {
+        if (!newSink)
+            return;
+
         Pipewire.preferredDefaultAudioSink = newSink;
+        // Also move streams that are already playing. Setting only the
+        // preferred default affects new streams, but browsers/media players
+        // may otherwise remain connected to the previous output.
+        Quickshell.execDetached(["audio-output", newSink.name]);
     }
 
     function setAudioSource(newSource: PwNode): void {

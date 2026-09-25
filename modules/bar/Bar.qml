@@ -186,7 +186,6 @@ ColumnLayout {
                 }
             }
             DelegateChoice {
-            DelegateChoice {
                 roleValue: "networkEmergency"
                 delegate: EntryWrapper {
                     NetworkEmergency {
@@ -194,6 +193,7 @@ ColumnLayout {
                     }
                 }
             }
+            DelegateChoice {
                 roleValue: "power"
                 delegate: EntryWrapper {
                     Power {
